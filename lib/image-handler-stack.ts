@@ -1,16 +1,30 @@
-import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as cdk from "aws-cdk-lib";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as path from "path";
+import { Construct } from "constructs";
+import { Cors } from "aws-cdk-lib/aws-apigateway";
 
 export class ImageHandlerStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    const lambdaFunction = new NodejsFunction(this as any, "Handler", {
+      runtime: lambda.Runtime.NODEJS_16_X,
+      handler: "main",
+      entry: path.join(__dirname, "../resources/lambda.ts"),
+      timeout: cdk.Duration.seconds(30),
+    });
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'ImageHandlerQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    new cdk.aws_apigateway.LambdaRestApi(this, "myapi", {
+      handler: lambdaFunction,
+      defaultCorsPreflightOptions: {
+        allowOrigins: Cors.ALL_ORIGINS,
+        allowMethods: Cors.ALL_METHODS,
+        allowHeaders: ["*"],
+        exposeHeaders: ["Access-Control-Allow-Origin"],
+      },
+    });
   }
 }
