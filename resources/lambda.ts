@@ -18,11 +18,13 @@ exports.main = async (event: any, context: any) => {
       };
     }
 
-    const res = await axios.get(url, {
+    const { data: imageArrBuffer, headers } = await axios.get(url, {
       responseType: "arraybuffer",
     });
 
-    const myBuffer = Buffer.from(res.data).toString("base64");
+    const myBuffer = `data:${headers["content-type"]};base64,${Buffer.from(
+      imageArrBuffer
+    ).toString("base64")}`;
 
     return {
       statusCode: 200,
